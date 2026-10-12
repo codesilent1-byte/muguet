@@ -1,0 +1,28 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Setup Tools & Rust
+        run: |
+          brew install xcodegen
+          rustup toolchain install 1.98.1
+          rustup target add aarch64-apple-ios --toolchain 1.98.1
+
+      - name: Build IPA
+        run: |
+          chmod +x make-ios.sh
+          FREE=1 BUNDLE_ID="com.codesilent.muguet" ./make-ios.sh game.zip --ipa
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Muguet-IPA
+          path: build/*.ipa
